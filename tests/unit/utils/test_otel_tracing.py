@@ -215,7 +215,7 @@ class TestSetSpanAttributes:
         )
         assert attrs[SpanAttributes.TOOL_CALLS_NAMES] == ("search", "calculator")
 
-    def test_set_empty_attributes(self, otel):
+    def test_set_empty_attributes(self, otel: Generator[Any, Any, Any]) -> None:
         """Test setting empty attributes dict."""
         tracer, exporter = otel
         with tracer.start_as_current_span("test_span") as span:
