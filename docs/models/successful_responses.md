@@ -684,6 +684,7 @@ Service customization.
 | agent_card_path | string |  |
 | agent_card_config | object |  |
 | custom_profile |  |  |
+| responses_request_max_size | integer | Maximum character length for the serialized /v1/response responses request body |
 
 
 ## DatabaseConfiguration
@@ -858,7 +859,7 @@ Inference configuration.
 |-------|------|-------------|
 | default_model | string | Identification of default model used when no other model is specified. |
 | default_provider | string | Identification of default provider used when no other model is specified. |
-| context_windows | object | Map of fully-qualified model identifier (e.g., "openai/gpt-4o-mini") to context window size in tokens. Used by the conversation compaction trigger to decide when older turns must be summarized before the input exceeds the window. Models absent from this map have no registered window — callers fall back to their own default or skip the token-based trigger. |
+| context_windows | object | Map of fully-qualified model identifier (e.g., "openai/gpt-5.6-luna") to context window size in tokens. Used by the conversation compaction trigger to decide when older turns must be summarized before the input exceeds the window. Models absent from this map have no registered window — callers fall back to their own default or skip the token-based trigger. |
 | providers | array | Discriminated list of inference providers. Empty by default. The sibling default_model / default_provider keep their query-time routing meaning and are independent of this list. |
 | max_infer_iters | integer | Server-side default for the maximum number of inference iterations a model can perform in a single request. Prevents small models from looping indefinitely on tool calls. Per-request values take precedence over this default. Set to None to disable the limit. |
 | max_tool_calls | integer | Server-side default for the maximum number of tool calls allowed in a single response. Prevents small models from exhausting the context window with repeated tool calls. Per-request values take precedence over this default. Set to None to disable the limit. |

@@ -1963,6 +1963,12 @@ class Customization(ConfigurationBase):
     agent_card_path: Optional[FilePath] = None
     agent_card_config: Optional[dict[str, Any]] = None
     custom_profile: Optional[CustomProfile] = Field(default=None, init=False)
+    responses_request_max_size: int = Field(
+        default=constants.RESPONSES_REQUEST_MAX_SIZE,
+        title="Maximum character length for the serialized responses request body",
+        description="Maximum character length for the serialized /v1/response responses "
+        "request body",
+    )
 
     @model_validator(mode="after")
     def check_customization_model(self) -> Self:
@@ -2053,7 +2059,7 @@ class InferenceConfiguration(ConfigurationBase):
         default_factory=dict,
         title="Per-model context window sizes (tokens)",
         description="Map of fully-qualified model identifier (e.g., "
-        '"openai/gpt-4o-mini") to context window size in tokens. Used by '
+        '"openai/gpt-5.6-luna") to context window size in tokens. Used by '
         "the conversation compaction trigger to decide when older turns "
         "must be summarized before the input exceeds the window. Models "
         "absent from this map have no registered window — callers fall "

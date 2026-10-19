@@ -46,7 +46,7 @@ from tests.e2e.utils.utils import (
     switch_config,
 )
 
-FALLBACK_MODEL = "gpt-4o-mini"
+FALLBACK_MODEL = "gpt-5.6-luna"
 FALLBACK_PROVIDER = "openai"
 
 # Wall-clock start for each feature (on ``Feature``; survives Behave context resets).
@@ -475,12 +475,14 @@ def _ensure_okp_solr_for_feature() -> None:
 
     Classic Prow and local Docker are no-ops. GitHub Actions / Prow skip the
     feature via ``@konflux-only`` before scenarios run.
+
+    ``ensure_okp_solr_ready`` prints the pulled image identity itself
+    (bypassing hook capture), so this wrapper stays silent on success and
+    only surfaces output when the deploy actually fails.
     """
     if not is_konflux_environment():
         return
-    print("[okp_rag.feature] Konflux: ensuring OKP Solr is deployed...")
     ensure_okp_solr_ready()
-    print("[okp_rag.feature] OKP Solr ready", flush=True)
 
 
 def before_feature(context: Context, feature: Feature) -> None:
