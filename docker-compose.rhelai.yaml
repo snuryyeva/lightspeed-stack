@@ -1,0 +1,38 @@
+# Docker Compose override for RHEL AI E2E tests
+# Uses port-forwarded vLLM from OpenShift
+#
+# Usage:
+#   1. Make sure vLLM port-forward is running: oc port-forward -n ls-evals pod/vllm-server 8000:8000
+#   2. Source environment: source .env.rhelai
+#   3. Run: docker compose -f docker-compose.yaml -f docker-compose.rhelai.yaml up
+
+services:
+  ogx:
+    volumes:
+      # Use RHEL AI specific run.yaml config
+      - ./tests/e2e/configs/run-rhelai.yaml:/opt/app-root/run.yaml:z
+      # Use RHEL AI specific lightspeed-stack.yaml
+      - ./tests/e2e/configuration/server-mode/lightspeed-stack-rhelai.yaml:/opt/app-root/lightspeed-stack.yaml:ro,z
+    environment:
+      # Point to port-forwarded vLLM on host
+      - VLLM_URL=${VLLM_URL:-http://host.docker.internal:8000}
+      - VLLM_API_KEY=${VLLM_API_KEY}
+      - VLLM_MODEL=${VLLM_MODEL}
+      # Alternative naming
+      - RHEL_AI_URL=${RHEL_AI_URL:-http://host.docker.internal}
+      - RHEL_AI_PORT=${RHEL_AI_PORT:-8000}
+      - RHEL_AI_API_KEY=${RHEL_AI_API_KEY}
+      - RHEL_AI_MODEL=${RHEL_AI_MODEL}
+
+  lightspeed-stack:
+    volumes:
+      # Use RHEL AI specific lightspeed-stack.yaml
+      - ./tests/e2e/configuration/server-mode/lightspeed-stack-rhelai.yaml:/app-root/lightspeed-stack.yaml:z
+    environment:
+      # Pass VLLM environment variables (needed by lightspeed-stack.yaml config)
+      - VLLM_URL=${VLLM_URL:-http://host.docker.internal:8000}
+      - VLLM_API_KEY=${VLLM_API_KEY}
+      - VLLM_MODEL=${VLLM_MODEL}
+      # FAISS vector store for RAG
+      - FAISS_VECTOR_STORE_ID=${FAISS_VECTOR_STORE_ID:-e2e-faiss-store}
+      - KV_RAG_PATH=${KV_RAG_PATH:-/tmp/e2e-rag-work/kv_store.db}
