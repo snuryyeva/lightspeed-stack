@@ -101,10 +101,20 @@ spec:
             secretKeyRef:
               name: api-url-secret
               key: key
+        - name: VLLM_URL
+          valueFrom:
+            secretKeyRef:
+              name: vllm-url-secret
+              key: key
         - name: VLLM_API_KEY
           valueFrom:
             secretKeyRef:
               name: vllm-api-key-secret
+              key: key
+        - name: VLLM_MODEL
+          valueFrom:
+            secretKeyRef:
+              name: vllm-model-secret
               key: key
         - name: INFERENCE_MODEL
           valueFrom:
