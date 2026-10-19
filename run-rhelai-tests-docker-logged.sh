@@ -1,5 +1,10 @@
 #!/bin/bash
 # Run RHEL AI E2E tests locally with Docker Compose and save logs
+#
+# Usage:
+#   ./run-rhelai-tests-docker-logged.sh                              # Run all tests
+#   ./run-rhelai-tests-docker-logged.sh tests/e2e/features/foo.feature  # Run specific feature
+#
 set -euo pipefail
 
 # Create logs directory
@@ -46,14 +51,18 @@ echo "" | tee -a "$LOG_FILE"
 # Source environment
 source .env.rhelai
 
-# Run E2E tests (use test-e2e-local on macOS for BSD script compatibility)
-echo "🧪 Running E2E tests..." | tee -a "$LOG_FILE"
-if [[ "$(uname -s)" == "Darwin" ]]; then
-  echo "ℹ️  macOS detected - using test-e2e-local (BSD script compatibility)" | tee -a "$LOG_FILE"
-  uv run make test-e2e-local 2>&1 | tee -a "$LOG_FILE"
+# Accept optional feature file argument, default to full test list
+FEATURE_FILE="${1:-@tests/e2e/test_list.txt}"
+
+# Run E2E tests with specified feature file
+# Skip @multimodal tests since RHEL AI uses text-only models (Llama-3.1-8B-Instruct)
+if [[ "$FEATURE_FILE" == "@tests/e2e/test_list.txt" ]]; then
+  echo "🧪 Running ALL E2E tests from test list (skipping multimodal)..." | tee -a "$LOG_FILE"
 else
-  uv run make test-e2e 2>&1 | tee -a "$LOG_FILE"
+  echo "🧪 Running specific feature: $FEATURE_FILE" | tee -a "$LOG_FILE"
 fi
+
+uv run behave --color --format pretty --tags=-skip --tags=-multimodal -D dump_errors=true "$FEATURE_FILE" 2>&1 | tee -a "$LOG_FILE"
 TEST_EXIT=${PIPESTATUS[0]}
 
 echo "" | tee -a "$LOG_FILE"
