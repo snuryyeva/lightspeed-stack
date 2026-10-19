@@ -58,13 +58,14 @@ uv sync --group dev
 ts "End: uv sync"
 
 ts "Start: e2e test-e2e"
-echo "Running e2e test suite..."
+echo "Running e2e test suite (skipping multimodal tests for text-only model)..."
 set +e
 # Makefile target is: uv run behave ... (Konflux/ubi-minimal often has no make)
+# Skip @multimodal tests since RhelAI uses text-only models
 if command -v make >/dev/null 2>&1; then
-  make test-e2e
+  E2E_BEHAVE_TAG_EXPR='not @skip and not @multimodal' make test-e2e-tagged
 else
-  uv run behave --color --format pretty --tags=-skip -D dump_errors=true @tests/e2e/test_list.txt
+  uv run behave --color --format pretty --tags=-skip --tags=-multimodal -D dump_errors=true @tests/e2e/test_list.txt
 fi
 BEHAVE_RC=$?
 set -e

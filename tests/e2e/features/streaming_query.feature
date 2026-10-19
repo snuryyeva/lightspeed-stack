@@ -146,7 +146,7 @@ Feature: streaming_query endpoint API tests
     """
     Then The status code of the response is 200
 
-  @flaky
+  @flaky @multimodal
   Scenario: Check if LLM responds properly when a valid image attachment is sent via streaming
     And I use "streaming_query" to ask question with authorization header
     """
@@ -246,7 +246,7 @@ Feature: streaming_query endpoint API tests
     Then The status code of the response is 422
       And The body of the response contains Invalid base64 content for image attachment
 
-  @flaky
+  @flaky @multimodal
   Scenario: Check if LLM responds properly when text and image attachments are sent together via streaming
     And I use "streaming_query" to ask question with authorization header
     """

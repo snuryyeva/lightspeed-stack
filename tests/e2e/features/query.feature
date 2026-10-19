@@ -157,7 +157,7 @@ Scenario: Check if LLM responds for query request with error for missing query
     """
     Then The status code of the response is 200
 
-  @flaky
+  @flaky @multimodal
   Scenario: Check if LLM responds properly when a valid image attachment is sent
     When I use "query" to ask question with authorization header
     """
@@ -180,7 +180,7 @@ Scenario: Check if LLM responds for query request with error for missing query
           | Fragments in LLM response |
           | image                     |
 
-  @flaky
+  @flaky @multimodal
   Scenario: Check if LLM responds properly when a valid WebP image attachment is sent
     When I use "query" to ask question with authorization header
     """
@@ -279,7 +279,7 @@ Scenario: Check if LLM responds for query request with error for missing query
     Then The status code of the response is 422
       And The body of the response contains Invalid base64 content for image attachment
 
-  @flaky
+  @flaky @multimodal
   Scenario: Check if LLM responds properly when text and image attachments are sent together
     When I use "query" to ask question with authorization header
     """
