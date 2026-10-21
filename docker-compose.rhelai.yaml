@@ -11,6 +11,13 @@ services:
     volumes:
       # Use RHEL AI specific run.yaml config
       - ./tests/e2e/configs/run-rhelai.yaml:/opt/app-root/run.yaml:z
+      # OKP/Solr provider spec discovery: enrich_solr() in ogx_configuration.py
+      # points external_providers_dir at /opt/app-root/providers.d, but the
+      # ogx image never populates it (deploy/ogx/test.containerfile only
+      # creates /opt/app-root/src/.llama/providers.d, empty, at a different
+      # path). Mount the vendored provider spec here so OKP/Solr enrichment
+      # can actually resolve remote::solr_vector_io.
+      - ./providers/resources/external_providers:/opt/app-root/providers.d:ro,z
       # Use RHEL AI specific lightspeed-stack.yaml
       - ./tests/e2e/configuration/server-mode/lightspeed-stack-rhelai.yaml:/opt/app-root/lightspeed-stack.yaml:ro,z
     environment:
@@ -23,6 +30,13 @@ services:
       - RHEL_AI_PORT=${RHEL_AI_PORT:-8000}
       - RHEL_AI_API_KEY=${RHEL_AI_API_KEY}
       - RHEL_AI_MODEL=${RHEL_AI_MODEL}
+      # OpenAI fallback (required by run-rhelai.yaml)
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      # Base compose hardcodes HF_HUB_OFFLINE=1 assuming a pre-seeded cache
+      # (e.g. baked into the image in CI). Local tmp/.hf-cache starts empty,
+      # so allow one-time downloads here; already-cached files are reused
+      # without network access on subsequent runs either way.
+      - HF_HUB_OFFLINE=0
 
   lightspeed-stack:
     volumes:
@@ -34,5 +48,5 @@ services:
       - VLLM_API_KEY=${VLLM_API_KEY}
       - VLLM_MODEL=${VLLM_MODEL}
       # FAISS vector store for RAG
-      - FAISS_VECTOR_STORE_ID=${FAISS_VECTOR_STORE_ID:-e2e-faiss-store}
+      - FAISS_VECTOR_STORE_ID=${FAISS_VECTOR_STORE_ID:-vs_8c94967b-81cc-4028-a294-9cfac6fd9ae2}
       - KV_RAG_PATH=${KV_RAG_PATH:-/tmp/e2e-rag-work/kv_store.db}

@@ -8,10 +8,30 @@ echo "RHEL AI E2E Tests - Local Docker Setup"
 echo "=========================================="
 echo ""
 
-# Check if port 8000 is accessible (vLLM port-forward)
-echo "🔍 Checking vLLM port-forward..."
-if curl -s -f --max-time 3 http://localhost:8000/v1/health >/dev/null 2>&1 || \
-   curl -s --max-time 3 http://localhost:8000/v1/health 2>&1 | grep -q "Unauthorized"; then
+# Source environment variables first to check VLLM_URL
+if [ -f .env.rhelai ]; then
+  echo "📝 Loading environment from .env.rhelai..."
+  source .env.rhelai
+else
+  echo "❌ ERROR: .env.rhelai file not found"
+  exit 1
+fi
+
+# Check if vLLM is accessible (either local port-forward or external URL)
+echo "🔍 Checking vLLM accessibility..."
+if [[ "$VLLM_URL" == https://* ]]; then
+  # Using external HTTPS URL
+  if curl -sk -f --max-time 5 -H "Authorization: Bearer ${VLLM_API_KEY}" "${VLLM_URL}/v1/models" >/dev/null 2>&1; then
+    echo "✅ vLLM is accessible at ${VLLM_URL}"
+  else
+    echo "❌ ERROR: Cannot reach vLLM at ${VLLM_URL}"
+    echo ""
+    echo "Check if the external vLLM endpoint is accessible:"
+    echo "  curl -sk -H \"Authorization: Bearer \${VLLM_API_KEY}\" ${VLLM_URL}/v1/models"
+    exit 1
+  fi
+elif curl -s -f --max-time 3 http://localhost:8000/v1/health >/dev/null 2>&1 || \
+     curl -s --max-time 3 http://localhost:8000/v1/health 2>&1 | grep -q "Unauthorized"; then
   echo "✅ vLLM is accessible at localhost:8000"
 else
   echo "❌ ERROR: Cannot reach vLLM at localhost:8000"
@@ -21,15 +41,6 @@ else
   echo ""
   echo "Or check if the port-forward is still running:"
   echo "  ps aux | grep 'port-forward.*8000'"
-  exit 1
-fi
-
-# Source environment variables
-if [ -f .env.rhelai ]; then
-  echo "📝 Loading environment from .env.rhelai..."
-  source .env.rhelai
-else
-  echo "❌ ERROR: .env.rhelai file not found"
   exit 1
 fi
 
