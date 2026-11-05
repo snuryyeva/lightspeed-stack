@@ -30,7 +30,7 @@ spec:
       type: string
     - name: model
       description: 'HuggingFace model to serve on RHEL AI.'
-      default: 'RedHatAI/Qwen3.8-27B-INT4'
+      default: 'RedHatAI/Qwen3.5-9B-quantized.w4a16'
       type: string
     - name: namespace
       description: 'Namespace to run tests in'
