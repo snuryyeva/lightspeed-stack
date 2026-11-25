@@ -362,23 +362,24 @@ def update_config_configmap(
             os.remove(temp_path)
 
 
-def assert_okp_reachable_from_ogx() -> None:
-    """Fail unless the OGX pod can HTTP GET in-cluster OKP Solr.
+def assert_okp_reachable_from_lcs() -> None:
+    """Fail unless the Lightspeed Stack pod can HTTP GET in-cluster OKP Solr.
 
     This is the Konflux health check: Solr is reached in-cluster from the
-    OGX pod. Behave does not port-forward Solr to the runner.
+    LCS pod (library mode talks to Solr in-process). Behave does not
+    port-forward Solr to the runner.
 
     Raises:
         subprocess.CalledProcessError: If the in-cluster GET fails.
         subprocess.TimeoutExpired: If the operation times out.
 
     """
-    result = run_e2e_ops("check-okp-solr-from-llama", timeout=60)
+    result = run_e2e_ops("check-okp-solr-from-lcs", timeout=60)
     print(result.stdout, end="")
     if result.returncode != 0:
         print(result.stderr, end="")
         raise subprocess.CalledProcessError(
-            result.returncode, "check-okp-solr-from-llama", result.stderr
+            result.returncode, "check-okp-solr-from-lcs", result.stderr
         )
 
 

@@ -245,16 +245,16 @@ def _assert_has_fields(
 
 @given("OKP(Solr) server is running")
 def okp_server_is_running(context: Context) -> None:
-    """Verify Solr is reachable from the OGX pod (Konflux in-cluster Service)."""
+    """Verify Solr is reachable from the LCS pod (Konflux in-cluster Service)."""
     if not is_konflux_environment():
         raise RuntimeError(
             "OKP Solr health check is only supported in Konflux "
-            "(in-cluster GET via e2e-ops check-okp-solr-from-llama)."
+            "(in-cluster GET via e2e-ops check-okp-solr-from-lcs)."
         )
 
-    from tests.e2e.utils.prow_utils import assert_okp_reachable_from_ogx
+    from tests.e2e.utils.prow_utils import assert_okp_reachable_from_lcs
 
-    assert_okp_reachable_from_ogx()
+    assert_okp_reachable_from_lcs()
 
 
 @given("The OKP(Solr) server is stopped")

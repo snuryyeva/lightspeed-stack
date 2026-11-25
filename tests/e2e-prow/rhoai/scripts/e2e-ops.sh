@@ -18,8 +18,8 @@
 #   do not auto-trigger a full stack restart on failure.
 # - OKP Solr is not deployed in pipeline setup. Features tagged @cfg_okp call
 #   deploy-okp-solr from before_feature (7GB image, first pull ~10-15 min).
-#   Background "OKP is running" GETs Solr from inside the OGX pod (in-cluster
-#   Service). Behave does not port-forward Solr to the runner.
+#   Background "OKP is running" GETs Solr from inside the Lightspeed Stack pod
+#   (in-cluster Service). Behave does not port-forward Solr to the runner.
 #
 # Commands:
 #   restart-lightspeed              - Restart lightspeed-stack pod and port-forward
@@ -37,7 +37,7 @@
 #   delete-e2e-mock-tls-inference   - Remove mock TLS pod + Service (manual cleanup)
 #   restart-e2e-mock-tls-inference  - Delete then deploy mock TLS (manual / recovery)
 #   sync-mock-tls-certs-secret      - Copy mock /certs into Secret for OGX mount
-#   check-okp-solr-from-llama       - GET Solr portal-rag select from inside the OGX pod
+#   check-okp-solr-from-lcs         - GET Solr portal-rag select from inside the LCS pod
 #   deploy-okp-solr                 - Deploy OKP Solr (idempotent; @cfg_okp before_feature)
 #   delete-okp-solr                 - Delete OKP Solr pod
 #   disrupt-okp-solr                - Delete OKP Solr pod to disrupt connection
@@ -1023,26 +1023,28 @@ cmd_disrupt_ogx() {
     fi
 }
 
-# Prove OGX can reach Solr in-cluster (same path as okp-solr.yaml probes).
+# Prove LCS can reach Solr in-cluster (same path as okp-solr.yaml probes).
+# Library mode talks to Solr from the Lightspeed Stack process, not a separate OGX pod.
 # /solr and /solr/ are the Solr Admin UI; current OKP/Mimir images return HTTP 404 there.
-cmd_check_okp_solr_from_llama() {
-    local pod="llama-stack-service"
-    local ctr="llama-stack-container"
+cmd_check_okp_solr_from_lcs() {
+    local pod="lightspeed-stack-service"
+    local ctr="lightspeed-stack-container"
     local url="http://okp-solr-service-svc:8080/solr/portal-rag/select?q=*:*&rows=0"
 
-    echo "Checking OKP Solr from OGX pod at ${url}..."
+    echo "Checking OKP Solr from LCS pod at ${url}..."
     if oc exec -n "$NAMESPACE" "$pod" -c "$ctr" -- \
         curl -sf --max-time 10 -o /dev/null "$url" 2>/dev/null; then
-        echo "✓ OGX pod can reach OKP Solr"
+        echo "✓ LCS pod can reach OKP Solr"
         return 0
     fi
+    # UBI python-minimal images often have no curl; python is on PATH via .venv.
     if oc exec -n "$NAMESPACE" "$pod" -c "$ctr" -- \
-        /opt/app-root/.venv/bin/python -c \
+        python -c \
         "import urllib.request; urllib.request.urlopen('${url}', timeout=10).read()"; then
-        echo "✓ OGX pod can reach OKP Solr"
+        echo "✓ LCS pod can reach OKP Solr"
         return 0
     fi
-    echo "ERROR: OGX pod cannot reach OKP Solr at $url"
+    echo "ERROR: LCS pod cannot reach OKP Solr at $url"
     return 1
 }
 
@@ -1206,8 +1208,8 @@ case "$COMMAND" in
     dump-pod-logs)
         cmd_dump_pod_logs "$@"
         ;;
-    check-okp-solr-from-llama)
-        cmd_check_okp_solr_from_llama
+    check-okp-solr-from-lcs)
+        cmd_check_okp_solr_from_lcs
         ;;
     deploy-okp-solr)
         cmd_deploy_okp_solr
@@ -1242,7 +1244,7 @@ case "$COMMAND" in
         echo "  deploy-e2e-interception-proxy      - Deploy in-cluster interception proxy pod"
         echo "  deploy-e2e-mock-tls-inference        - Deploy mock HTTPS inference (tls-*.feature)"
         echo "  delete-e2e-mock-tls-inference        - Remove mock TLS pod + Service"
-        echo "  check-okp-solr-from-llama            - GET Solr portal-rag select from inside the OGX pod"
+        echo "  check-okp-solr-from-lcs               - GET Solr portal-rag select from inside the LCS pod"
         echo "  deploy-okp-solr                      - Deploy OKP Solr (idempotent; @cfg_okp before_feature)"
         echo "  delete-okp-solr                      - Delete OKP Solr pod"
         echo "  disrupt-okp-solr                     - Delete OKP Solr pod to disrupt connection"

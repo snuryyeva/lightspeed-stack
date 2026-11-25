@@ -114,6 +114,8 @@ services:
       # Substituted in mounted lightspeed-stack.yaml (ogx.url); GitHub Actions sets E2E_LLAMA_HOSTNAME
       - E2E_OGX_HOSTNAME=${E2E_OGX_HOSTNAME:-${E2E_LLAMA_HOSTNAME:-ogx}}
       - E2E_OGX_PORT=${E2E_OGX_PORT:-${E2E_LLAMA_PORT:-8321}}
+      # OKP/Solr RAG (library mode: LCS talks to Solr, not the OGX container)
+      - RH_SERVER_OKP=${RH_SERVER_OKP:-}
       # OpenTelemetry configuration. Export is enabled by default and points at
       # the mock OTLP/HTTP collector so the OpenTelemetry delivery E2E test works
       # without per-scenario reconfiguration. Override any OTEL_* var (or set

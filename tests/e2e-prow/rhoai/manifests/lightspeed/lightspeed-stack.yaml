@@ -63,6 +63,10 @@ spec:
               optional: true
         - name: E2E_OPENAI_MODEL
           value: "gpt-5.6-luna"
+        # In-cluster OKP Solr Service. LCS reads ${env.RH_SERVER_OKP} from
+        # lightspeed-stack-okp-*.yaml (library mode talks to Solr in-process).
+        - name: RH_SERVER_OKP
+          value: "http://okp-solr-service-svc:8080"
         # Unused for server-mode FAISS (llama pod owns the fixture); keep out of ~/.llama.
         - name: KV_RAG_PATH
           value: "/app-root/.e2e-rag-work/kv_store.db"
